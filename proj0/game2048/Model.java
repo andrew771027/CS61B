@@ -1,5 +1,7 @@
 package game2048;
 
+import static org.junit.Assert.fail;
+
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -113,12 +115,67 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        
+        board.setViewingPerspective(side);
 
+        for (int col = 0; col <= board.size() -1; col++)
+        {
+            for (int row = board.size() -1 ; row > 0 ; row--)
+            {
+                Tile currentTile = board.tile(col, row);
+                // if current tile is null, we look for non-null tile below.
+                if (currentTile == null)
+                {
+                    Tile tileBelow = lookTileBelow(col, row-1, board);
+                    if (tileBelow != null)
+                    {
+                        board.move(col, row, tileBelow);
+                        row += 1;
+                        changed = true;
+                    }
+                }
+                else if (currentTile != null)
+                {
+                    Tile tileBelow = lookTileBelow(col, row-1, board);
+
+                    if (tileBelow != null)
+                    {
+                        if (currentTile.value() == tileBelow.value())
+                        {
+                            board.move(col, row, tileBelow);
+                            score += board.tile(col, row).value();
+                        }
+                        else if (currentTile.value() != tileBelow.value() && row - tileBelow.row() > 1)
+                        {
+                            board.move(col, row - 1, tileBelow);
+                        }
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        board.setViewingPerspective(Side.NORTH);
+        
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
+    }
+
+    public static Tile lookTileBelow(int col, int startRow, Board board){
+
+        for (int row=startRow; row>=0; row--)
+        {
+            Tile tile = board.tile(col, row);
+            if (tile != null)
+            {
+                return tile;
+            }
+        }
+        
+        return null;
     }
 
     /** Checks if the game is over and sets the gameOver variable
@@ -138,6 +195,17 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        int size = b.size();
+        for (int col = 0; col < size; col++)
+        {
+            for (int row = 0; row < size; row++)
+            {
+                if (b.tile(col, row) == null)
+                {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,6 +216,24 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+
+        int size = b.size();
+        for (int col = 0; col < size; col++)
+        {
+            for (int row = 0; row < size; row++)
+            {
+                if (b.tile(col,row) == null)
+                {
+                    continue;
+                }
+                
+                if (b.tile(col, row).value() == MAX_PIECE)
+                {
+                    return true;
+                } 
+            }
+        }
+        
         return false;
     }
 
@@ -158,7 +244,52 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        
+        if (emptySpaceExists(b) == true || atLeastOneValidDirection(b) == true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean atLeastOneValidDirection(Board b)
+    {
+
+        int size = b.size();
+
+        for (int col = 0; col < size; col++)
+        {
+            for (int row = 0; row < size-1; row++)
+            {
+                if (b.tile(col, row) == null || b.tile(col, row+1) == null)
+                {
+                    continue;
+                }
+
+                if (b.tile(col, row).value() == b.tile(col, row+1).value())
+                {
+                    return true;
+                }
+            }
+        }
+
+        for (int row = 0; row < size; row++)
+        {
+            for (int col = 0; col < size - 1; col++)
+            {
+                if (b.tile(col, row) == null || b.tile(col+1, row) == null)
+                {
+                    continue;
+                }
+                
+                if (b.tile(col, row).value() == b.tile(col+1, row).value())
+                {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
