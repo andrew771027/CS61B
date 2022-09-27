@@ -10,8 +10,9 @@ import static capers.Utils.*;
 public class Dog { // TODO
 
     /** Folder that dogs live in. */
-    static final File DOG_FOLDER = null; // TODO (hint: look at the `join`
-                                         //      function in Utils)
+    static final File DOG_FOLDER = Utils.join(Utils.join(".capers", "dogs")); 
+                                    // TODO (hint: look at the `join`
+                                    //      function in Utils)
 
     /** Age of dog. */
     private int age;
@@ -40,6 +41,11 @@ public class Dog { // TODO
      */
     public static Dog fromFile(String name) {
         // TODO (hint: look at the Utils file)
+        File fromFile = Utils.join(DOG_FOLDER, name);
+        if (fromFile.exists()){
+            return readObject(fromFile, Dog.class);
+        }
+
         return null;
     }
 
@@ -57,6 +63,8 @@ public class Dog { // TODO
      */
     public void saveDog() {
         // TODO (hint: don't forget dog names are unique)
+        File outFile = Utils.join(DOG_FOLDER, name);
+        writeObject(outFile, this); 
     }
 
     @Override
